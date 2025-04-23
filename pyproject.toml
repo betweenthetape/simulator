@@ -6,5 +6,6 @@ readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "great-tables>=0.17.0",
+    "pandas>=2.2.3",
     "shiny>=1.4.0",
 ]
