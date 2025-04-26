@@ -10,6 +10,22 @@ fastest_split_by_run <- function(.data, section) {
     as.character()
 }
 
+highlight_fastest_splits <- function(gt_tbl, data) {
+  reduce(
+    .x = 1:5,
+    .f = \(gt, i) {
+      col_sym <- rlang::sym(as.character(i))
+      gt |>
+        data_color(
+          columns = !!col_sym,
+          rows = round_type == fastest_split_by_run(data, !!col_sym),
+          palette = "#4daf4a"
+        )
+    },
+    .init = gt_tbl
+  )
+}
+
 fastest_splits_gt <- function(name, event_name) {
   tbl <- sectors |>
     filter(name == {{ name }}) |>
@@ -49,31 +65,7 @@ fastest_splits_gt <- function(name, event_name) {
       ),
       md("Fastest splits are highlighted in green")
     ) |>
-    data_color(
-      columns = `1`,
-      rows = round_type == fastest_split_by_run(tbl, `1`),
-      palette = "#4daf4a"
-    ) |>
-    data_color(
-      columns = `2`,
-      rows = round_type == fastest_split_by_run(tbl, `2`),
-      palette = "#4daf4a"
-    ) |>
-    data_color(
-      columns = `3`,
-      rows = round_type == fastest_split_by_run(tbl, `3`),
-      palette = "#4daf4a"
-    ) |>
-    data_color(
-      columns = `4`,
-      rows = round_type == fastest_split_by_run(tbl, `4`),
-      palette = "#4daf4a"
-    ) |>
-    data_color(
-      columns = `5`,
-      rows = round_type == fastest_split_by_run(tbl, `5`),
-      palette = "#4daf4a"
-    )
+    highlight_fastest_splits(tbl)
 }
 
-fastest_splits_gt("Dakotah Norton", "Fort William")
+fastest_splits_gt("Loic Bruni", "Fort William")
