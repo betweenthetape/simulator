@@ -1,7 +1,17 @@
-library(tidyverse)
+# ------------------------------------------------------------------------------
+# Load
+# ------------------------------------------------------------------------------
+library(shiny)
+library(bslib)
 library(gt)
+library(readr)
+library(purrr)
+library(dplyr)
 
-sectors <- read_csv("data-raw/sectors.csv")
+# ------------------------------------------------------------------------------
+# Helpers
+# ------------------------------------------------------------------------------
+sectors <- read_csv("sectors.csv")
 
 fastest_split_by_run <- function(.data, section) {
   .data |>
@@ -68,4 +78,29 @@ fastest_splits_gt <- function(name, event_name) {
     highlight_fastest_splits(tbl)
 }
 
-fastest_splits_gt("Loic Bruni", "Fort William")
+# ------------------------------------------------------------------------------
+# UI
+# ------------------------------------------------------------------------------
+ui <- page_sidebar(
+  title = "Simulator",
+  sidebar = sidebar(
+    "Controls:",
+    selectInput("name", "Select rider", unique(sectors$name)),
+    selectInput("event_name", "Select event", unique(sectors$event_name))
+  ),
+  gt_output(outputId = "fastest_splits_tbl")
+)
+
+# ------------------------------------------------------------------------------
+# Server
+# ------------------------------------------------------------------------------
+server <- function(input, output, session) {
+  output$fastest_splits_tbl <- gt::render_gt(
+    fastest_splits_gt(input$name, input$event_name)
+  )
+}
+
+# ------------------------------------------------------------------------------
+# Run
+# ------------------------------------------------------------------------------
+shinyApp(ui, server)
