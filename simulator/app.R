@@ -15,20 +15,19 @@ sectors <- read_csv("sectors.csv")
 
 fastest_split_by_run <- function(.data, section) {
   .data |>
-    slice_min({{ section }}, na_rm = TRUE) |>
+    slice_min(.data[[section]], na_rm = TRUE) |>
     pull(round_type) |>
     as.character()
 }
 
 highlight_fastest_splits <- function(gt_tbl, data) {
   reduce(
-    .x = 1:5,
-    .f = \(gt, i) {
-      col_sym <- rlang::sym(as.character(i))
+    .x = paste0("section_", 1:5),
+    .f = \(gt, x) {
       gt |>
         data_color(
-          columns = !!col_sym,
-          rows = round_type == fastest_split_by_run(data, !!col_sym),
+          columns = x,
+          rows = round_type == fastest_split_by_run(data, x),
           palette = "#4daf4a"
         )
     },
@@ -54,15 +53,22 @@ fastest_splits_gt <- function(name, event_name) {
         )
       )
     ) |>
-    relocate(time, .after = `5`) |>
+    # relocate(time, .after = `5`) |>
     arrange(round_type)
 
   gt(tbl, rowname_col = "round_type") |>
     sub_missing() |>
     opt_row_striping() |>
-    cols_label("round_type" = "") |>
+    cols_label(
+      "round_type" = "",
+      "section_1" = "1",
+      "section_2" = "2",
+      "section_3" = "3",
+      "section_4" = "4",
+      "section_5" = "5"
+    ) |>
     fmt_number(!round_type, decimals = 2) |>
-    tab_spanner(label = "Section", columns = !round_type) |>
+    tab_spanner(label = "Section", columns = !c(round_type, time)) |>
     tab_style(
       style = cell_text(align = "left"),
       locations = cells_stub()
