@@ -12,6 +12,7 @@ library(dplyr)
 # Helpers
 # ------------------------------------------------------------------------------
 sectors <- read_csv("sectors.csv")
+simulated <- read_csv("simulated.csv")
 
 fastest_split_by_run <- function(.data, section) {
   .data |>
@@ -82,6 +83,137 @@ fastest_splits_gt <- function(name, event_name) {
       md("Fastest splits are highlighted in green")
     ) |>
     fastest_splits_highlight(tbl)
+}
+
+simulated_splits_ranked <- simulated |>
+  select(name, event_name, starts_with("split_"), split_5 = time) |>
+  mutate(
+    across(
+      starts_with("split_"),
+      ~ rank(.x, ties.method = "min"),
+      .names = "{.col}_rank"
+    ),
+    .by = event_name
+  ) |>
+  mutate(
+    across(
+      starts_with("split_") & !ends_with("_rank"),
+      ~ .x - min(.x),
+      .names = "{.col}_gap"
+    ),
+    .by = "event_name"
+  ) |>
+  mutate(
+    event_name = factor(
+      event_name,
+      levels = c(
+        "Fort William",
+        "Bielsko-Biala",
+        "Leogang",
+        "Val di Sole",
+        "Les Gets",
+        "Loudenvielle",
+        "Mont-Sainte-Anne"
+      )
+    )
+  )
+
+simulated_splits_merge_cols <- function(gt_tbl) {
+  reduce(
+    1:5,
+    \(gt_tbl, x) {
+      cols_merge(
+        gt_tbl,
+        columns = c(
+          paste0("split_", x, "_gap"),
+          paste0("split_", x, "_rank")
+        ),
+        pattern = "{1} ({2})"
+      )
+    },
+    .init = gt_tbl
+  )
+}
+
+simulated_splits_colour_cells <- function(gt_tbl, event_names) {
+  reduce(
+    event_names,
+    \(tbl, event) {
+      data_color(
+        tbl,
+        columns = ends_with("_gap"),
+        rows = event_name == event,
+        palette = c("#4daf4a", "#ffffbf", "#e41a1c")
+      )
+    },
+    .init = gt_tbl
+  )
+}
+
+simulated_splits_heat_map <- function() {
+  simulated_splits_ranked |>
+    filter(split_5_rank <= 10) |>
+    # left_join(image_data) |>
+    select(name, event_name, ends_with("_gap"), ends_with("_rank")) |>
+    group_by(event_name) |>
+    arrange(split_5_gap, .by_group = TRUE) |>
+    ungroup() |>
+    gt(groupname_col = "event_name") |>
+    # text_transform(
+    #   locations = cells_body(columns = path),
+    #   fn = function(path) {
+    #     local_image(
+    #       filename = path,
+    #       height = 60
+    #     )
+    #   }
+    # ) |>
+    cols_label(
+      # path = "",
+      name = "",
+      split_1_gap = "Split 1",
+      split_2_gap = "Split 2",
+      split_3_gap = "Split 3",
+      split_4_gap = "Split 4",
+      split_5_gap = "Finish"
+    ) |>
+    simulated_splits_colour_cells(unique(
+      simulated_splits_ranked$event_name
+    )) |>
+    text_transform(
+      fn = \(x) if_else(x == "0.000", paste0(x), paste("+", x)),
+      locations = cells_body(columns = ends_with("_gap"))
+    ) |>
+    simulated_splits_merge_cols() |>
+    tab_style(
+      style = cell_borders(sides = "all", style = "solid", color = "#e9e9e9"),
+      locations = cells_body(
+        columns = ends_with("_gap")
+      )
+    ) |>
+    tab_style(
+      style = cell_text(weight = "bold"),
+      locations = cells_column_labels()
+    ) |>
+    opt_row_striping() |>
+    tab_options(
+      table.font.size = px(12),
+      column_labels.font.weight = "bold"
+    ) |>
+    tab_style(
+      style = cell_text(align = "center"),
+      locations = cells_body(columns = !name)
+    ) |>
+    tab_style(
+      style = cell_text(weight = "bold"),
+      locations = cells_body(columns = "name")
+    ) |>
+    tab_header(
+      title = md("## Simulated Race Split Times and Rankings"),
+      subtitle = md(
+        "### Each split in each race is colored by split time from fastest (green) to slowest (red)"
+      )
+    )
 }
 
 # ------------------------------------------------------------------------------
