@@ -20,7 +20,7 @@ fastest_split_by_run <- function(.data, section) {
     as.character()
 }
 
-highlight_fastest_splits <- function(gt_tbl, data) {
+fastest_splits_highlight <- function(gt_tbl, data) {
   reduce(
     .x = paste0("section_", 1:5),
     .f = \(gt, x) {
@@ -81,7 +81,7 @@ fastest_splits_gt <- function(name, event_name) {
       ),
       md("Fastest splits are highlighted in green")
     ) |>
-    highlight_fastest_splits(tbl)
+    fastest_splits_highlight(tbl)
 }
 
 # ------------------------------------------------------------------------------
