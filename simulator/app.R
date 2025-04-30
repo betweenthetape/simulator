@@ -88,16 +88,17 @@ fastest_splits_gt <- function(name, event_name) {
 # UI
 # ------------------------------------------------------------------------------
 ui <- page_sidebar(
+  theme = bs_theme(version = 5),
   title = "Simulator",
   sidebar = sidebar(
     "Controls:",
     selectInput("name", "Select rider", unique(sectors$name)),
     selectInput("event_name", "Select event", unique(sectors$event_name))
   ),
-  gt_output(outputId = "fastest_splits_tbl")
+  card(gt_output(outputId = "fastest_splits_tbl"), full_screen = TRUE)
 )
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------x----------------
 # Server
 # ------------------------------------------------------------------------------
 server <- function(input, output, session) {
