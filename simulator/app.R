@@ -190,7 +190,7 @@ simulated_splits_heat_map <- function(name, event_name) {
         )
       ),
       subtitle = md(
-        "### Each split in each race is colored by split time from fastest (green) to slowest (red)"
+        "Each split in each race is colored by split time from fastest (green) to slowest (red)"
       )
     )
 }
