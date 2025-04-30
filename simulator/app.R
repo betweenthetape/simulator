@@ -135,30 +135,13 @@ simulated_splits_merge_cols <- function(gt_tbl) {
   )
 }
 
-simulated_splits_colour_cells <- function(gt_tbl, event_names) {
-  reduce(
-    event_names,
-    \(tbl, event) {
-      data_color(
-        tbl,
-        columns = ends_with("_gap"),
-        rows = event_name == event,
-        palette = c("#4daf4a", "#ffffbf", "#e41a1c")
-      )
-    },
-    .init = gt_tbl
-  )
-}
-
-simulated_splits_heat_map <- function() {
+simulated_splits_heat_map <- function(name, event_name) {
   simulated_splits_ranked |>
-    filter(split_5_rank <= 10) |>
+    filter(split_5_rank <= 10 | name == {{ name }}) |>
+    filter(event_name == {{ event_name }}) |>
     # left_join(image_data) |>
-    select(name, event_name, ends_with("_gap"), ends_with("_rank")) |>
-    group_by(event_name) |>
-    arrange(split_5_gap, .by_group = TRUE) |>
-    ungroup() |>
-    gt(groupname_col = "event_name") |>
+    select(name, ends_with("_gap"), ends_with("_rank")) |>
+    gt() |>
     # text_transform(
     #   locations = cells_body(columns = path),
     #   fn = function(path) {
@@ -177,9 +160,10 @@ simulated_splits_heat_map <- function() {
       split_4_gap = "Split 4",
       split_5_gap = "Finish"
     ) |>
-    simulated_splits_colour_cells(unique(
-      simulated_splits_ranked$event_name
-    )) |>
+    data_color(
+      columns = ends_with("_gap"),
+      palette = c("#4daf4a", "#ffffbf", "#e41a1c")
+    ) |>
     text_transform(
       fn = \(x) if_else(x == "0.000", paste0(x), paste("+", x)),
       locations = cells_body(columns = ends_with("_gap"))
@@ -209,12 +193,18 @@ simulated_splits_heat_map <- function() {
       locations = cells_body(columns = "name")
     ) |>
     tab_header(
-      title = md("## Simulated Race Split Times and Rankings"),
+      title = md(
+        glue::glue(
+          "**Simulated split times from {event_name} for the top 10 + {name}**"
+        )
+      ),
       subtitle = md(
         "### Each split in each race is colored by split time from fastest (green) to slowest (red)"
       )
     )
 }
+
+simulated_splits_heat_map("Ronan Dunne", "Fort William")
 
 # ------------------------------------------------------------------------------
 # UI
