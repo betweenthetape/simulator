@@ -137,9 +137,9 @@ simulated_splits_merge_cols <- function(gt_tbl) {
   )
 }
 
-simulated_splits_heat_map <- function(name, event_name) {
+simulated_splits_heat_map <- function(name, event_name, name_additional) {
   simulated_splits_ranked |>
-    filter(split_5_rank <= 10 | name == {{ name }}) |>
+    filter(name %in% c({{ name }}, {{ name_additional }})) |>
     filter(event_name == {{ event_name }}) |>
     select(name, ends_with("_gap"), ends_with("_rank")) |>
     gt() |>
@@ -246,7 +246,11 @@ server <- function(input, output, session) {
     fastest_splits_gt(input$name, input$event_name)
   )
   output$simulated_splits_tbl <- gt::render_gt(
-    simulated_splits_heat_map(input$name, input$event_name)
+    simulated_splits_heat_map(
+      input$name,
+      input$event_name,
+      input$name_additional
+    )
   )
 }
 
