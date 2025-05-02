@@ -13,8 +13,8 @@ library(stringr)
 # ------------------------------------------------------------------------------
 # Helpers
 # ------------------------------------------------------------------------------
-sectors <- read_csv("sectors.csv")
-simulated <- read_csv("simulated.csv")
+sectors <- read_csv("sectors.csv", show_col_types = FALSE)
+simulated <- read_csv("simulated.csv", show_col_types = FALSE)
 
 fastest_split_by_run <- function(.data, section) {
   .data |>
@@ -203,8 +203,23 @@ ui <- page_sidebar(
   title = "Simulator",
   sidebar = sidebar(
     "Controls:",
-    selectInput("name", "Select rider", unique(sectors$name)),
-    selectInput("event_name", "Select event", unique(sectors$event_name))
+    selectInput(
+      "name",
+      "Select rider",
+      unique(sectors$name)
+    ),
+    selectInput(
+      "event_name",
+      "Select event",
+      unique(sectors$event_name)
+    ),
+    selectizeInput(
+      "name_additional",
+      "Optionally, select up to five additional riders for comparison",
+      choices = NULL,
+      multiple = TRUE,
+      options = list(maxItems = 5, placeholder = "Select comparison riders...")
+    )
   ),
   layout_columns(
     card(gt_output("fastest_splits_tbl"), full_screen = TRUE),
@@ -216,6 +231,17 @@ ui <- page_sidebar(
 # Server
 # ------------------------------------------------------------------------------
 server <- function(input, output, session) {
+  observe({
+    input$name
+  }) |>
+    bindEvent(
+      updateSelectizeInput(
+        session = session,
+        "name_additional",
+        choices = setdiff(unique(sectors$name), input$name)
+      )
+    )
+
   output$fastest_splits_tbl <- gt::render_gt(
     fastest_splits_gt(input$name, input$event_name)
   )
