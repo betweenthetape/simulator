@@ -13,8 +13,8 @@ library(stringr)
 # ------------------------------------------------------------------------------
 # Helpers
 # ------------------------------------------------------------------------------
-sectors <- read_csv("sectors.csv")
-simulated <- read_csv("simulated.csv")
+sectors <- read_csv("sectors.csv", show_col_types = FALSE)
+simulated <- read_csv("simulated.csv", show_col_types = FALSE)
 
 fastest_split_by_run <- function(.data, section) {
   .data |>
@@ -137,9 +137,9 @@ simulated_splits_merge_cols <- function(gt_tbl) {
   )
 }
 
-simulated_splits_heat_map <- function(name, event_name) {
+simulated_splits_heat_map <- function(name, event_name, name_additional) {
   simulated_splits_ranked |>
-    filter(split_5_rank <= 10 | name == {{ name }}) |>
+    filter(name %in% c({{ name }}, {{ name_additional }})) |>
     filter(event_name == {{ event_name }}) |>
     select(name, ends_with("_gap"), ends_with("_rank")) |>
     gt() |>
@@ -203,12 +203,35 @@ ui <- page_sidebar(
   title = "Simulator",
   sidebar = sidebar(
     "Controls:",
-    selectInput("name", "Select rider", unique(sectors$name)),
-    selectInput("event_name", "Select event", unique(sectors$event_name))
+    selectInput(
+      "name",
+      "Select rider",
+      unique(sectors$name)
+    ),
+    selectInput(
+      "event_name",
+      "Select event",
+      unique(sectors$event_name)
+    ),
+    selectizeInput(
+      "name_additional",
+      "Optionally, select up to five additional riders for comparison",
+      choices = NULL,
+      multiple = TRUE,
+      options = list(maxItems = 5, placeholder = "Select comparison riders...")
+    )
   ),
   layout_columns(
-    card(gt_output("fastest_splits_tbl"), full_screen = TRUE),
-    card(gt_output("simulated_splits_tbl"), full_screen = TRUE)
+    card(
+      card_header("Splits"),
+      gt_output("fastest_splits_tbl"),
+      full_screen = TRUE
+    ),
+    card(
+      card_header("Simulation"),
+      gt_output("simulated_splits_tbl"),
+      full_screen = TRUE
+    )
   )
 )
 
@@ -216,11 +239,26 @@ ui <- page_sidebar(
 # Server
 # ------------------------------------------------------------------------------
 server <- function(input, output, session) {
+  observe({
+    input$name
+  }) |>
+    bindEvent(
+      updateSelectizeInput(
+        session = session,
+        "name_additional",
+        choices = setdiff(unique(sectors$name), input$name)
+      )
+    )
+
   output$fastest_splits_tbl <- gt::render_gt(
     fastest_splits_gt(input$name, input$event_name)
   )
   output$simulated_splits_tbl <- gt::render_gt(
-    simulated_splits_heat_map(input$name, input$event_name)
+    simulated_splits_heat_map(
+      input$name,
+      input$event_name,
+      input$name_additional
+    )
   )
 }
 
