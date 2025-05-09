@@ -200,7 +200,7 @@ simulated_splits_heat_map <- function(name, event_name, name_additional) {
 # ------------------------------------------------------------------------------
 ui <- page_sidebar(
   theme = bs_theme(version = 5),
-  title = "Simulator",
+  title = "2024 UCI DH World Cup Simulator",
   sidebar = sidebar(
     "Controls:",
     selectInput(
