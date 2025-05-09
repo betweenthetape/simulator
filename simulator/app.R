@@ -31,7 +31,7 @@ fastest_splits_highlight <- function(gt_tbl, data) {
         data_color(
           columns = x,
           rows = round_type == fastest_split_by_run(data, x),
-          palette = "#4daf4a"
+          palette = "#bbbbbb"
         )
     },
     .init = gt_tbl
@@ -82,7 +82,7 @@ fastest_splits_gt <- function(name, event_name) {
           "**{name}'s split times from {event_name}**"
         )
       ),
-      md("Fastest splits are highlighted in green")
+      md("Fastest splits are highlighted in grey")
     ) |>
     fastest_splits_highlight(tbl)
 }
@@ -137,6 +137,18 @@ simulated_splits_merge_cols <- function(gt_tbl) {
   )
 }
 
+simulated_splits_color <- function(gt_tbl, name_additional) {
+  if (!is.null(name_additional)) {
+    gt_tbl |>
+      data_color(
+        columns = ends_with("_gap"),
+        palette = c("#4daf4a", "#ffffbf", "#e41a1c")
+      )
+  } else {
+    gt_tbl
+  }
+}
+
 simulated_splits_heat_map <- function(name, event_name, name_additional) {
   simulated_splits_ranked |>
     filter(name %in% {{ name_additional }} | name == {{ name }}) |>
@@ -151,10 +163,7 @@ simulated_splits_heat_map <- function(name, event_name, name_additional) {
       split_4_gap = "Split 4",
       split_5_gap = "Finish"
     ) |>
-    data_color(
-      columns = ends_with("_gap"),
-      palette = c("#4daf4a", "#ffffbf", "#e41a1c")
-    ) |>
+    simulated_splits_color(name_additional) |>
     text_transform(
       fn = \(x) if_else(x == "0.000", paste0(x), paste("+", x)),
       locations = cells_body(columns = ends_with("_gap"))
@@ -186,11 +195,11 @@ simulated_splits_heat_map <- function(name, event_name, name_additional) {
     tab_header(
       title = md(
         glue::glue(
-          "**Simulated split times from {event_name} for the top 10 + {name}**"
+          "**Simulated split times from {event_name}**"
         )
       ),
       subtitle = md(
-        "Each split in each race is colored by split time from fastest (green) to slowest (red)"
+        "When comparing additional riders, each split in each race is colored by split time from fastest (green) to slowest (red)"
       )
     )
 }
@@ -200,8 +209,9 @@ simulated_splits_heat_map <- function(name, event_name, name_additional) {
 # ------------------------------------------------------------------------------
 ui <- page_sidebar(
   theme = bs_theme(version = 5),
-  title = "Simulator",
+  title = "2024 UCI DH World Cup Simulator",
   sidebar = sidebar(
+    open = TRUE,
     "Controls:",
     selectInput(
       "name",
@@ -222,8 +232,16 @@ ui <- page_sidebar(
     )
   ),
   layout_columns(
-    card(gt_output("fastest_splits_tbl"), full_screen = TRUE),
-    card(gt_output("simulated_splits_tbl"), full_screen = TRUE)
+    card(
+      card_header("Actual race results", class = "bg-light"),
+      gt_output("fastest_splits_tbl"),
+      full_screen = TRUE
+    ),
+    card(
+      card_header("Simulated race results", class = "bg-light"),
+      gt_output("simulated_splits_tbl"),
+      full_screen = TRUE
+    )
   )
 )
 
