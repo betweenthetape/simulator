@@ -137,6 +137,18 @@ simulated_splits_merge_cols <- function(gt_tbl) {
   )
 }
 
+simulated_splits_color <- function(gt_tbl, name_additional) {
+  if (!is.null(name_additional)) {
+    gt_tbl |>
+      data_color(
+        columns = ends_with("_gap"),
+        palette = c("#4daf4a", "#ffffbf", "#e41a1c")
+      )
+  } else {
+    gt_tbl
+  }
+}
+
 simulated_splits_heat_map <- function(name, event_name, name_additional) {
   simulated_splits_ranked |>
     filter(name %in% {{ name_additional }} | name == {{ name }}) |>
@@ -151,10 +163,7 @@ simulated_splits_heat_map <- function(name, event_name, name_additional) {
       split_4_gap = "Split 4",
       split_5_gap = "Finish"
     ) |>
-    data_color(
-      columns = ends_with("_gap"),
-      palette = c("#4daf4a", "#ffffbf", "#e41a1c")
-    ) |>
+    simulated_splits_color(name_additional) |>
     text_transform(
       fn = \(x) if_else(x == "0.000", paste0(x), paste("+", x)),
       locations = cells_body(columns = ends_with("_gap"))
