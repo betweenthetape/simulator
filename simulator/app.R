@@ -7,7 +7,6 @@ library(gt)
 library(readr)
 library(purrr)
 library(dplyr)
-library(fs)
 library(stringr)
 
 # ------------------------------------------------------------------------------
