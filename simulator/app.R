@@ -195,11 +195,11 @@ simulated_splits_heat_map <- function(name, event_name, name_additional) {
     tab_header(
       title = md(
         glue::glue(
-          "**Simulated split times from {event_name} for the top 10 + {name}**"
+          "**Simulated split times from {event_name}**"
         )
       ),
       subtitle = md(
-        "Each split in each race is colored by split time from fastest (green) to slowest (red)"
+        "When comparing additional riders, each split in each race is colored by split time from fastest (green) to slowest (red)"
       )
     )
 }
