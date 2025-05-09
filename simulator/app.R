@@ -222,8 +222,16 @@ ui <- page_sidebar(
     )
   ),
   layout_columns(
-    card(gt_output("fastest_splits_tbl"), full_screen = TRUE),
-    card(gt_output("simulated_splits_tbl"), full_screen = TRUE)
+    card(
+      card_header("Actual race results", class = "bg-light"),
+      gt_output("fastest_splits_tbl"),
+      full_screen = TRUE
+    ),
+    card(
+      card_header("Simulated race results", class = "bg-light"),
+      gt_output("simulated_splits_tbl"),
+      full_screen = TRUE
+    )
   )
 )
 
