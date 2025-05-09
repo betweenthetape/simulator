@@ -211,6 +211,7 @@ ui <- page_sidebar(
   theme = bs_theme(version = 5),
   title = "2024 UCI DH World Cup Simulator",
   sidebar = sidebar(
+    open = TRUE,
     "Controls:",
     selectInput(
       "name",
