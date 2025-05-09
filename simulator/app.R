@@ -31,7 +31,7 @@ fastest_splits_highlight <- function(gt_tbl, data) {
         data_color(
           columns = x,
           rows = round_type == fastest_split_by_run(data, x),
-          palette = "#4daf4a"
+          palette = "#bbbbbb"
         )
     },
     .init = gt_tbl
@@ -82,7 +82,7 @@ fastest_splits_gt <- function(name, event_name) {
           "**{name}'s split times from {event_name}**"
         )
       ),
-      md("Fastest splits are highlighted in green")
+      md("Fastest splits are highlighted in grey")
     ) |>
     fastest_splits_highlight(tbl)
 }
